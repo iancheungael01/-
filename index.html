@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>AEL 維護系統 (Power Automate)</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+        
+        body { 
+            margin: 0; 
+            background: #dbe2e8; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh; 
+            padding: 16px 0; 
+            color: #1e293b;
+        }
+
+        .phone { 
+            width: 440px; 
+            max-width: 100%; 
+            padding: 0 12px; 
+        }
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        .card { 
+            background: #f8fafc; 
+            border: 1px solid #cbd5e1;
+            border-radius: 18px; 
+            padding: 20px; 
+            margin-bottom: 16px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); 
+        }
+
+        .card h3 { 
+            margin-top: 0; 
+            margin-bottom: 14px; 
+            font-weight: 700; 
+            font-size: 1.15rem; 
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .label-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            margin-bottom: 6px;
+        }
+
+        .num-badge {
+            background-color: #e8dbc8;
+            color: #3b2c1e;
+            font-weight: 700;
+            font-size: 13px;
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d8c7b0;
+        }
+
+        .field-label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #1e293b;
+        }
+
+        .required {
+            color: #dc2626;
+            margin-left: 2px;
+        }
+
+        .sub-text {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: -4px;
+            margin-bottom: 12px;
+        }
+
+        .input { 
+            width: 100%; 
+            padding: 12px; 
+            box-sizing: border-box; 
+            border: 1px solid #94a3b8; 
+            border-radius: 10px; 
+            margin: 4px 0 10px 0; 
+            font-size: 14px; 
+            background: #e2e8f0; 
+            color: #0f172a; 
+            transition: all 0.2s ease;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #475569;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.2);
+        }
+
+        .btn { 
+            width: 100%; 
+            padding: 13px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 12px; 
+            font-size: 15px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.15s ease; 
+            text-align: center; 
+            color: #1e293b;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn:active { 
+            transform: translateY(1px);
+            background-color: #f1f5f9;
+        }
+
+        .btn.primary {
+            background-color: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
+        }
+
+        .btn.primary:active {
+            background-color: #1e293b;
+        }
+
+        .btn.success, .btn.warning {
+            background-color: #e8dbc8;
+            color: #3b2c1e;
+            border-color: #d8c7b0;
+        }
+
+        .btn.info {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            border-color: #cbd5e1;
+        }
+
+        .btn.secondary {
+            background-color: #ffffff;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+
+        .btn.danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+
+        .header-card {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 18px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .header-icon {
+            background: #e8dbc8;
+            border: 1px solid #d8c7b0;
+            border-radius: 12px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .header-subtitle {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 2px 0 0 0;
+        }
+
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+        .photo-grid .thumb { aspect-ratio: 1/1; border-radius: 10px; background: #e2e8f0; overflow: hidden; border: 1px solid #cbd5e1; position: relative; }
+        .photo-grid .thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-grid .thumb .del-btn { position: absolute; top: 4px; right: 4px; background: rgba(225, 29, 72, 0.85); color: #fff; border-radius: 50%; width: 22px; height: 22px; text-align: center; line-height: 20px; font-size: 13px; cursor: pointer; }
+        
+        #qr-reader { background: #0f172a; border-radius: 12px; overflow: hidden; margin-bottom: 12px; }
+        
+        .gps-box { 
+            background: #e8dbc8; 
+            border: 1px solid #d8c7b0; 
+            padding: 14px 16px; 
+            border-radius: 12px; 
+            font-size: 13px; 
+            color: #3b2c1e; 
+            margin-bottom: 12px; 
+        }
+
+        .sync-badge { font-size: 11px; padding: 3px 8px; border-radius: 12px; background: #ef4444; color: #fff; display: inline-block; margin-left: 6px; }
+        
+        .error-message {
+            color: #dc2626;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="phone">
+
+    <!-- 密碼驗證頁面 (預設顯示) -->
+    <div id="login" class="screen active">
+        <div class="header-card">
+            <div class="header-icon">🔒</div>
+            <div>
+                <div class="header-title">AEL MAINTENANCE SYSTEM</div>
+                <div class="header-subtitle">系統存取驗證</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>請輸入登入密碼</h3>
+            <div class="sub-text">存取此維護系統需要授權密碼</div>
+            
+            <div class="label-container" style="margin-top: 10px;">
+                <span class="num-badge">🔑</span>
+                <span class="field-label">密碼</span>
+            </div>
+            <input type="password" id="passwordInput" class="input" placeholder="請輸入 8 位數密碼" onkeyup="checkEnterKey(event)">
+            <div id="loginError" class="error-message">❌ 密碼錯誤，請重新輸入。</div>
+            
+            <br>
+            <button class="btn primary" onclick="verifyPassword()">解鎖登入</button>
+        </div>
+    </div>
+
+    <!-- 主頁 -->
+    <div id="home" class="screen">
+        <div class="header-card">
+            <div class="header-icon">🔧</div>
+            <div>
+                <div class="header-title">FIELD OPERATIONS / 01</div>
+                <div class="header-subtitle">設備巡檢表單</div>
+            </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <button class="btn success" onclick="showPage('service')">🛠️ 工程服務 (Site)</button>
+            <button class="btn info" onclick="showPage('checkin')">📍 技術員簽到 (Check-in)</button>
+            <button class="btn secondary" onclick="showPage('syncSettings')">
+                ☁️ 雲端同步中心 
+                <span id="unsyncedBadge" class="sync-badge" style="display:none;">0 待同步</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 雲端同步中心頁面 -->
+    <div id="syncSettings" class="screen">
+        <div class="card">
+            <h3>☁️ Power Automate 雲端同步</h3>
+            <div class="sub-text">點擊按鈕即可將本地備份資料與照片同步至 Power Automate。</div>
+            
+            <div style="font-size:14px; line-height:1.8; color:#334151; background:#e2e8f0; padding:14px; border-radius:10px; border:1px solid #cbd5e1;">
+                • 待同步簽到紀錄：<strong id="pendingCheckinsCount">0</strong> 筆<br>
+                • 待同步工程照片/資料：<strong id="pendingPhotosCount">0</strong> 筆
+            </div>
+            <br>
+            <button id="syncBtn" class="btn warning" onclick="triggerSyncProcess()">🚀 立即上載同步至雲端</button>
+        </div>
+
+        <button class="btn secondary" onclick="showPage('home')">返回主頁</button>
+    </div>
+
+    <!-- 技術員簽到頁面 -->
+    <div id="checkin" class="screen">
+        <div class="card">
+            <h3>📍 技術員簽到</h3>
+
+            <div class="label-container">
+                <span class="num-badge">1</span>
+                <span class="field-label">技術員姓名</span>
+                <span class="required">*</span>
+            </div>
+            <input type="text" id="techNameInput" class="input" placeholder="請輸入姓名 (例如：張大明)">
+
+            <div class="label-container">
+                <span class="num-badge">2</span>
+                <span class="field-label">衛星定位</span>
+                <span class="required">*</span>
+            </div>
+            <div id="gpsStatus" class="gps-box">正在獲取 GPS 定位資訊...</div>
+            <button class="btn secondary" style="padding:8px; font-size:12px;" onclick="getGpsLocation()">🔄 重新整理 GPS 定位</button>
+        </div>
+
+        <div class="grid2">
+            <button class="btn success" onclick="submitCheckIn()">✅ 確認簽到</button>
+            <button class="btn secondary" onclick="showPage('home')">返回主頁</button>
+        </div>
+    </div>
+
+    <!-- 工程服務頁面 -->
+    <div id="service" class="screen">
+        <div class="card">
+            <h3>📷 QR Code 自動填寫資料</h3>
+            <div id="qr-reader" style="display:none;"></div>
+            <button id="toggleQrBtn" class="btn warning" onclick="toggleQrScanner()">開啟相機掃描 QR Code</button>
+        </div>
+
+        <div class="card">
+            <h3>巡檢項目資料</h3>
+
+            <div class="label-container">
+                <span class="num-badge">1</span>
+                <span class="field-label">場地名稱</span>
+            </div>
+            <select id="siteSelect" class="input"></select>
+
+            <div class="label-container">
+                <span class="num-badge">2</span>
+                <span class="field-label">設備名稱</span>
+            </div>
+            <select id="machineSelect" class="input"></select>
+
+            <div class="label-container">
+                <span class="num-badge">3</span>
+                <span class="field-label">機器編號</span>
+                <span class="required">*</span>
+            </div>
+            <select id="machineIdSelect" class="input"></select>
+
+            <div class="label-container">
+                <span class="num-badge">4</span>
+                <span class="field-label">工作編號</span>
+            </div>
+            <input type="text" id="workOrderInput" class="input" placeholder="例如：WO-2026-001">
+            <div class="sub-text">工作編號可由 QR Code 掃描、連結帶入或手動輸入。</div>
+        </div>
+
+        <div class="card">
+            <div class="label-container" style="margin-top:0;">
+                <span class="num-badge">5</span>
+                <span class="field-label">現場照片</span>
+                <span class="required">*</span>
+            </div>
+
+            <div class="grid2" style="margin-top:10px;">
+                <button class="btn success" onclick="prepareAndShowCamera()">📷 連續拍攝照片</button>
+                <button class="btn secondary" onclick="uploadPhotos()">📤 選擇檔案上傳</button>
+                <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleFileUpload(event)">
+            </div>
+        </div>
+
+        <button class="btn secondary" onclick="showPage('home')">返回主頁</button>
+    </div>
+
+    <!-- 相機連續拍攝頁面 -->
+    <div id="camera" class="screen">
+        <div class="card">
+            <h3>拍攝相片</h3>
+            <video id="cameraFeed" autoplay playsinline style="width:100%; height:200px; background:#0f172a; border-radius:10px;"></video>
+            <canvas id="cameraCanvas" hidden></canvas>
+            
+            <div class="label-container">
+                <span class="num-badge">✓</span>
+                <span class="field-label">已拍攝列表 (<span id="capturedCount">0</span> 張):</span>
+            </div>
+            <div id="capturedPreviewGrid" class="photo-grid"></div>
+        </div>
+
+        <div class="grid2">
+            <button class="btn warning" onclick="capturePhoto()">📸 拍攝一張</button>
+            <button class="btn primary" onclick="goToConfirmPage()">✅ 完成並確認</button>
+        </div>
+        <br>
+        <button class="btn danger" onclick="showPage('service')">取消返回</button>
+    </div>
+
+    <!-- 確認頁面 -->
+    <div id="confirm" class="screen">
+        <div class="card">
+            <h3>確認上載內容</h3>
+            <div style="font-size:13px; color:#334151; margin-bottom:10px; background:#e2e8f0; padding:12px; border-radius:10px; border:1px solid #cbd5e1;">
+                <p style="margin:2px 0;"><strong>場地名稱:</strong> <span id="summarySite">--</span></p>
+                <p style="margin:2px 0;"><strong>設備名稱:</strong> <span id="summaryMachine">--</span></p>
+                <p style="margin:2px 0;"><strong>機器編號:</strong> <span id="summaryReg">--</span></p>
+                <p style="margin:2px 0;"><strong>工作編號:</strong> <span id="summaryWo">--</span></p>
+            </div>
+
+            <div class="label-container">
+                <span class="num-badge">⚠️</span>
+                <span class="field-label">故障類型</span>
+                <span class="required">*</span>
+            </div>
+            <div class="sub-text">請選擇最主要的故障；如設備正常，請選「沒有問題」</div>
+            <select id="issueTypeSelect" class="input">
+                <option value="沒有問題" selected>沒有問題</option>
+                <option value="水泵故障不運作">水泵故障不運作</option>
+                <option value="無供水">無供水</option>
+                <option value="水壓不足">水壓不足</option>
+                <option value="漏水">漏水</option>
+                <option value="爆喉">爆喉</option>
+                <option value="異響">異響</option>
+                <option value="警報響">警報響</option>
+                <option value="Panel故障">Panel故障</option>
+                <option value="Sensor故障">Sensor故障</option>
+                <option value="水位異常">水位異常</option>
+                <option value="長行不停機">長行不停機</option>
+                <option value="跳掣／無電">跳掣／無電</option>
+                <option value="入氣／空轉">入氣／空轉</option>
+                <option value="無法上水">無法上水</option>
+                <option value="污水泵故障">污水泵故障</option>
+                <option value="雨水泵故障">雨水泵故障</option>
+                <option value="加壓泵故障">加壓泵故障</option>
+                <option value="豬膽／浮波故障">豬膽／浮波故障</option>
+                <option value="控制箱故障">控制箱故障</option>
+                <option value="水浸">水浸</option>
+                <option value="其他">其他</option>
+            </select>
+
+            <div class="label-container" style="margin-top:14px;">
+                <span class="num-badge">📸</span>
+                <span class="field-label">照片列表 (<span id="confirmCount">0</span> 張)</span>
+            </div>
+            <div id="confirmPreviewGrid" class="photo-grid"></div>
+        </div>
+
+        <div class="grid2">
+            <button class="btn primary" onclick="confirmAndUploadPhotos()">🚀 全部儲存</button>
+            <button class="btn secondary" onclick="showPage('camera')">繼續拍攝</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker 已成功註冊。', reg))
+                .catch(err => console.error('Service Worker 註冊失敗:', err));
+        });
+    }
+
+    const APP_PASSWORD = "27671000";
+    const POWER_AUTOMATE_URL = "https://3685358de1b2e6f89344b173ee068c.8f.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/19/workflows/1ca055e3b77f4a08bb3f70f9f34e0aef/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=7yKFsQX_D6yiPiPIDGWCwvUCeIQL1dEVWAgf0wFf-Oc";
+
+    const DB_NAME = 'AEL_MaintenanceDB';
+    const DB_VERSION = 5;
+    const STORES = { sites: 'projectSites', machines: 'machines', machineIds: 'machineIds', photos: 'photos', checkIns: 'checkIns' };
+
+    const DEFAULT_SITES = ["上水救護站", "AIA TOWER", "九龍塘消防局", "黃大仙警署"];
+    const DEFAULT_MACHINES = ["傳統水泵", "加壓水泵", "潛水式水泵"];
+    const DEFAULT_MACHINE_IDS = ["WP30848", "10337628-01", "SHK-WP30999"];
+
+    let db = null;
+    let tempPhotoArray = [];
+    let html5QrcodeScanner = null;
+    let currentGpsData = null;
+
+    function verifyPassword() {
+        const inputVal = document.getElementById('passwordInput').value;
+        const errDiv = document.getElementById('loginError');
+        
+        if (inputVal === APP_PASSWORD) {
+            errDiv.style.display = 'none';
+            autoFillAndGoToCamera();
+        } else {
+            errDiv.style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordInput').focus();
+        }
+    }
+
+    function checkEnterKey(event) {
+        if (event.key === 'Enter') {
+            verifyPassword();
+        }
+    }
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            if (db) return resolve(db);
+            const req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = (ev) => {
+                const db = ev.target.result;
+                if (!db.objectStoreNames.contains(STORES.sites)) db.createObjectStore(STORES.sites, { keyPath: 'id', autoIncrement: true });
+                if (!db.objectStoreNames.contains(STORES.machines)) db.createObjectStore(STORES.machines, { keyPath: 'id', autoIncrement: true });
+                if (!db.objectStoreNames.contains(STORES.machineIds)) db.createObjectStore(STORES.machineIds, { keyPath: 'id', autoIncrement: true });
+                if (!db.objectStoreNames.contains(STORES.photos)) db.createObjectStore(STORES.photos, { keyPath: 'id', autoIncrement: true });
+                if (!db.objectStoreNames.contains(STORES.checkIns)) db.createObjectStore(STORES.checkIns, { keyPath: 'id', autoIncrement: true });
+            };
+            req.onsuccess = async (ev) => { db = ev.target.result; await seedDefaultData(); resolve(db); };
+            req.onerror = (ev) => reject(ev.target.error);
+        });
+    }
+
+    async function seedDefaultData() {
+        const sites = await getAllRecords(STORES.sites);
+        if (sites.length === 0) for (const name of DEFAULT_SITES) await addRecord(STORES.sites, { name });
+        const machines = await getAllRecords(STORES.machines);
+        if (machines.length === 0) for (const name of DEFAULT_MACHINES) await addRecord(STORES.machines, { name });
+        const mIds = await getAllRecords(STORES.machineIds);
+        if (mIds.length === 0) for (const name of DEFAULT_MACHINE_IDS) await addRecord(STORES.machineIds, { name });
+    }
+
+    function addRecord(storeName, data) {
+        return openDB().then(db => new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, 'readwrite');
+            const req = tx.objectStore(storeName).add(data);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        }));
+    }
+
+    function updateRecord(storeName, data) {
+        return openDB().then(db => new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, 'readwrite');
+            const req = tx.objectStore(storeName).put(data);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        }));
+    }
+
+    function getAllRecords(storeName) {
+        return openDB().then(db => new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, 'readonly');
+            const req = tx.objectStore(storeName).getAll();
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        }));
+    }
+
+    function showPage(pageId) {
+        stopQrScanner();
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+        if (pageId === 'home') checkUnsyncedCount();
+        if (pageId === 'service') refreshServiceSelects();
+        if (pageId === 'checkin') getGpsLocation();
+        if (pageId === 'syncSettings') updateUnsyncedStats();
+        if (pageId === 'camera') startCamera();
+        else stopCamera();
+    }
+
+    async function checkUnsyncedCount() {
+        const checkins = await getAllRecords(STORES.checkIns);
+        const photos = await getAllRecords(STORES.photos);
+
+        const pendingCheckins = checkins.filter(item => !item.synced);
+        const pendingPhotos = photos.filter(item => !item.synced);
+
+        const totalUnsynced = pendingCheckins.length + pendingPhotos.length;
+        const badge = document.getElementById('unsyncedBadge');
+        
+        if (totalUnsynced > 0) {
+            badge.style.display = 'inline-block';
+            badge.textContent = `${totalUnsynced} 待同步`;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    async function updateUnsyncedStats() {
+        const checkins = await getAllRecords(STORES.checkIns);
+        const photos = await getAllRecords(STORES.photos);
+
+        const pendingCheckins = checkins.filter(item => !item.synced);
+        const pendingPhotos = photos.filter(item => !item.synced);
+
+        document.getElementById('pendingCheckinsCount').textContent = pendingCheckins.length;
+        document.getElementById('pendingPhotosCount').textContent = pendingPhotos.length;
+    }
+
+    async function triggerSyncProcess() {
+        const checkins = await getAllRecords(STORES.checkIns);
+        const photos = await getAllRecords(STORES.photos);
+
+        const pendingCheckins = checkins.filter(item => !item.synced);
+        const pendingPhotos = photos.filter(item => !item.synced);
+
+        if (pendingCheckins.length === 0 && pendingPhotos.length === 0) {
+            alert('目前所有資料均已同步至雲端！');
+            return;
+        }
+
+        const syncBtn = document.getElementById('syncBtn');
+        syncBtn.disabled = true;
+        syncBtn.textContent = '⏳ 正在同步上載...';
+
+        try {
+            const payload = { checkIns: pendingCheckins, photos: pendingPhotos };
+
+            await fetch(POWER_AUTOMATE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            for (const record of pendingCheckins) {
+                record.synced = true;
+                await updateRecord(STORES.checkIns, record);
+            }
+
+            for (const record of pendingPhotos) {
+                record.synced = true;
+                await updateRecord(STORES.photos, record);
+            }
+
+            alert(`✅ 同步完成！\n已成功將 ${pendingCheckins.length} 筆簽到與 ${pendingPhotos.length} 筆工程照片發送至 Power Automate。`);
+        } catch (err) {
+            alert('❌ 同步失敗: ' + err.message);
+        } finally {
+            syncBtn.disabled = false;
+            syncBtn.textContent = '🚀 立即上載同步至雲端';
+            updateUnsyncedStats();
+            checkUnsyncedCount();
+        }
+    }
+
+    function getGpsLocation() {
+        const gpsBox = document.getElementById('gpsStatus');
+        gpsBox.style.background = '#e8dbc8';
+        gpsBox.style.color = '#3b2c1e';
+        gpsBox.innerHTML = '🌐 正在讀取 GPS 定位...';
+
+        if (!navigator.geolocation) {
+            gpsBox.style.background = '#fee2e2';
+            gpsBox.style.color = '#991b1b';
+            gpsBox.innerHTML = '❌ 您的瀏覽器不支援 GPS 定位功能。';
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude.toFixed(6);
+                const lng = position.coords.longitude.toFixed(6);
+                const accuracy = position.coords.accuracy ? position.coords.accuracy.toFixed(1) : null;
+                
+                currentGpsData = { 
+                    latitude: position.coords.latitude, 
+                    longitude: position.coords.longitude, 
+                    accuracy: position.coords.accuracy 
+                };
+
+                gpsBox.innerHTML = `
+                    <strong>📍 位置已取得</strong><br><br>
+                    <div style="display:flex; justify-content:space-between; text-align:left;">
+                        <div><strong>緯度</strong><br>${lat}</div>
+                        <div><strong>經度</strong><br>${lng}</div>
+                        <div><strong>精確度</strong><br>±${accuracy ? accuracy + 'm' : '未知'}</div>
+                    </div>
+                `;
+            },
+            (error) => {
+                currentGpsData = null;
+                gpsBox.style.background = '#fee2e2';
+                gpsBox.style.color = '#991b1b';
+                let msg = '無法獲取位置信息';
+                if (error.code === error.PERMISSION_DENIED) msg = '使用者拒絕提供 GPS 權限。';
+                gpsBox.innerHTML = `❌ <strong>定位失敗</strong>: ${msg}`;
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    }
+
+    async function submitCheckIn() {
+        const name = document.getElementById('techNameInput').value.trim();
+        if (!name) { alert('請輸入技術員姓名！'); return; }
+
+        const checkInRecord = {
+            techName: name,
+            gps: currentGpsData,
+            timestamp: new Date().toISOString(),
+            synced: false
+        };
+
+        await addRecord(STORES.checkIns, checkInRecord);
+        alert(`✅ 技術員 [${name}] 簽到成功！`);
+        document.getElementById('techNameInput').value = '';
+        showPage('home');
+    }
+
+    async function refreshServiceSelects() {
+        populateSelect('siteSelect', await getAllRecords(STORES.sites));
+        populateSelect('machineSelect', await getAllRecords(STORES.machines));
+        populateSelect('machineIdSelect', await getAllRecords(STORES.machineIds));
+    }
+
+    function populateSelect(selectId, items) {
+        const select = document.getElementById(selectId);
+        select.innerHTML = '';
+        items.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.name;
+            opt.textContent = item.name;
+            select.appendChild(opt);
+        });
+    }
+
+    function toggleQrScanner() {
+        const qrContainer = document.getElementById('qr-reader');
+        const btn = document.getElementById('toggleQrBtn');
+
+        if (qrContainer.style.display === 'none') {
+            qrContainer.style.display = 'block';
+            btn.textContent = '關閉 QR Code 掃描器';
+            
+            html5QrcodeScanner = new Html5Qrcode("qr-reader");
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                onScanSuccess,
+                onScanFailure
+            );
+        } else {
+            stopQrScanner();
+        }
+    }
+
+    function stopQrScanner() {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.stop().then(() => {
+                document.getElementById('qr-reader').style.display = 'none';
+                document.getElementById('toggleQrBtn').textContent = '開啟相機掃描 QR Code';
+                html5QrcodeScanner = null;
+            }).catch(err => console.error(err));
+        }
+    }
+
+    function onScanSuccess(decodedText) {
+        stopQrScanner();
+        alert('解析 QR Code 成功！');
+
+        try {
+            const data = JSON.parse(decodedText);
+            if (data.site) setSelectValue('siteSelect', data.site);
+            if (data.machine) setSelectValue('machineSelect', data.machine);
+            if (data.machineId) setSelectValue('machineIdSelect', data.machineId);
+            if (data.workOrder) document.getElementById('workOrderInput').value = data.workOrder;
+        } catch (e) {
+            const delimiter = decodedText.includes('|') ? '|' : (decodedText.includes(',') ? ',' : '\n');
+            const parts = decodedText.split(delimiter).map(p => p.trim());
+
+            if (parts.length >= 1 && parts[0]) setSelectValue('siteSelect', parts[0]);
+            if (parts.length >= 2 && parts[1]) setSelectValue('machineSelect', parts[1]);
+            if (parts.length >= 3 && parts[2]) setSelectValue('machineIdSelect', parts[2]);
+            if (parts.length >= 4 && parts[3]) document.getElementById('workOrderInput').value = parts[3];
+        }
+    }
+
+    function onScanFailure(error) {}
+
+    function setSelectValue(selectId, value) {
+        const select = document.getElementById(selectId);
+        for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === value) {
+                select.selectedIndex = i;
+                return;
+            }
+        }
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = value + ' (新)';
+        select.appendChild(opt);
+        select.value = value;
+    }
+
+    let cameraStream = null;
+    const video = document.getElementById('cameraFeed');
+    const canvas = document.getElementById('cameraCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+            video.srcObject = null;
+        }
+    }
+
+    function startCamera() {
+        stopCamera();
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then(stream => { cameraStream = stream; video.srcObject = stream; video.play(); })
+            .catch(err => alert('無法開啟相機: ' + err.message));
+    }
+
+    function prepareAndShowCamera() {
+        tempPhotoArray = [];
+        updateCapturedPreview();
+        showPage('camera');
+    }
+
+    function capturePhoto() {
+        if (!cameraStream) { alert('請先開啟鏡頭。'); return; }
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        tempPhotoArray.push(dataUrl);
+        updateCapturedPreview();
+    }
+
+    function updateCapturedPreview() {
+        document.getElementById('capturedCount').textContent = tempPhotoArray.length;
+        const grid = document.getElementById('capturedPreviewGrid');
+        grid.innerHTML = '';
+        tempPhotoArray.forEach((imgBase64, index) => {
+            const div = document.createElement('div');
+            div.className = 'thumb';
+            div.innerHTML = `<img src="${imgBase64}"><div class="del-btn" onclick="removePhoto(${index})">×</div>`;
+            grid.appendChild(div);
+        });
+    }
+
+    function removePhoto(index) {
+        tempPhotoArray.splice(index, 1);
+        updateCapturedPreview();
+    }
+
+    function goToConfirmPage() {
+        if (tempPhotoArray.length === 0) { alert('請至少拍攝一張照片！'); return; }
+
+        document.getElementById('summarySite').textContent = document.getElementById('siteSelect').value;
+        document.getElementById('summaryMachine').textContent = document.getElementById('machineSelect').value;
+        document.getElementById('summaryReg').textContent = document.getElementById('machineIdSelect').value;
+        document.getElementById('summaryWo').textContent = document.getElementById('workOrderInput').value || '未填寫';
+
+        document.getElementById('issueTypeSelect').value = '沒有問題';
+
+        document.getElementById('confirmCount').textContent = tempPhotoArray.length;
+        const grid = document.getElementById('confirmPreviewGrid');
+        grid.innerHTML = '';
+        tempPhotoArray.forEach(imgBase64 => {
+            const div = document.createElement('div');
+            div.className = 'thumb';
+            div.innerHTML = `<img src="${imgBase64}">`;
+            grid.appendChild(div);
+        });
+        showPage('confirm');
+    }
+
+    function uploadPhotos() { document.getElementById('fileInput').click(); }
+
+    function handleFileUpload(event) {
+        const files = Array.from(event.target.files);
+        if (files.length === 0) return;
+
+        tempPhotoArray = [];
+        let loadedCount = 0;
+
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempPhotoArray.push(e.target.result);
+                loadedCount++;
+                if (loadedCount === files.length) goToConfirmPage();
+            };
+            reader.readAsDataURL(file);
+        });
+        event.target.value = '';
+    }
+
+    async function confirmAndUploadPhotos() {
+        const site = document.getElementById('siteSelect').value;
+        const machine = document.getElementById('machineSelect').value;
+        const machineId = document.getElementById('machineIdSelect').value;
+        const workOrder = document.getElementById('workOrderInput').value || "無工作編號";
+        const issueType = document.getElementById('issueTypeSelect').value;
+        const timestamp = new Date().toISOString();
+
+        if (tempPhotoArray.length === 0) {
+            alert("沒有可儲存的照片！");
+            return;
+        }
+
+        const saveBtn = document.querySelector("#confirm .btn.primary");
+        const originalText = saveBtn.textContent;
+        saveBtn.disabled = true;
+        saveBtn.textContent = "⏳ 正在透過 Power Automate 上傳中...";
+
+        const photosToUpload = tempPhotoArray.map((photoBase64, index) => ({
+            site: site,
+            machine: machine,
+            machineId: machineId,
+            workOrder: workOrder,
+            issueType: issueType,
+            photoBase64: photoBase64,
+            photoIndex: index + 1,
+            timestamp: timestamp
+        }));
+
+        try {
+            for (const photoData of photosToUpload) {
+                await addRecord(STORES.photos, { ...photoData, synced: false });
+            }
+
+            const response = await fetch(POWER_AUTOMATE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photos: photosToUpload })
+            });
+
+            if (response.ok) {
+                const localPhotos = await getAllRecords(STORES.photos);
+                const unSyncedList = localPhotos.filter(p => !p.synced);
+                for (const p of unSyncedList) {
+                    p.synced = true;
+                    await updateRecord(STORES.photos, p);
+                }
+                alert("🎉 上載成功！資料與照片已成功傳送至 Power Automate 處理。");
+            } else {
+                alert(`⚠️ 上傳失敗 (HTTP Status: ${response.status})，照片已先儲存至本地備份。`);
+            }
+
+            tempPhotoArray = [];
+            document.getElementById('workOrderInput').value = '';
+            showPage('service');
+
+        } catch (err) {
+            alert("⚠️ 網路傳輸異常，照片已先儲存至本地備份：" + err.message);
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalText;
+        }
+    }
+
+    async function autoFillAndGoToCamera() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        const site = urlParams.get('site');
+        const machine = urlParams.get('machine');
+        const machineId = urlParams.get('machineId');
+        const workOrder = urlParams.get('workOrder');
+
+        const hasEmbedParams = site || machine || machineId || workOrder;
+
+        if (hasEmbedParams) {
+            if (site) setSelectValue('siteSelect', site);
+            if (machine) setSelectValue('machineSelect', machine);
+            if (machineId) setSelectValue('machineIdSelect', machineId);
+            if (workOrder) document.getElementById('workOrderInput').value = workOrder;
+
+            tempPhotoArray = [];
+            updateCapturedPreview();
+            showPage('camera');
+        } else {
+            showPage('home');
+        }
+    }
+
+    openDB().then(() => {
+        refreshServiceSelects();
+        checkUnsyncedCount();
+    });
+</script>
+</body>
+</html>
